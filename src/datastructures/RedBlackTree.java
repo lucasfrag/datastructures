@@ -11,11 +11,12 @@ package datastructures;
 
 class RedBlackNode<T extends Comparable<T>> {
 
-	private T value;
-	private RedBlackNode<T> left;
-	private RedBlackNode<T> right;
-	private RedBlackNode<T> parent;
-	private boolean red;
+	/* private removidos para tornar os atributos visiveis para os metodos de remocao */
+	T value;
+	RedBlackNode<T> left;
+	RedBlackNode<T> right;
+	RedBlackNode<T> parent;
+	boolean red;
 	
 	public RedBlackNode(T value) {
 		this.value = value;
@@ -54,6 +55,19 @@ class RedBlackNode<T extends Comparable<T>> {
 	public RedBlackNode<T> getParent() {
 		return parent;
 	}
+	
+	// Metodo para achar irmao de node
+	public RedBlackNode<T> getSibling(RedBlackNode<T> node) {
+		RedBlackNode<T> sibling = null;
+		
+		if (node.getParent().left == node) {
+			sibling = node.getParent().right;
+		} else if (node.getParent().right == node) {
+			sibling = node.getParent().left;
+		}
+		return sibling;
+	}
+
 	
 	public void setBlack() {
 		this.red = false;
@@ -236,4 +250,126 @@ public class RedBlackTree<T extends Comparable<T>>
 		else
 			root.print();
 	}
+
+	
+	/* Remover da arvore */
+	
+	public void remove(RedBlackNode<T> node) {
+		
+		
+	}
+	
+	public void removeOneChild(RedBlackNode<T> node) {
+		/* Node precisa ter pelo menos um filho que nao seja folha*/
+		RedBlackNode<T> child = node.right.red ? node.left : node.right;
+	    
+		/* Incompleto: */
+        replace_node();
+        
+        if (node.red == false) {
+            if(child.red == true) {
+                child.red = false;
+            } else {
+                remove_case1(child);
+            }
+            free(node);
+        }
+	}
+	
+	public void remove_case1(RedBlackNode<T> node) {
+		if (node.getParent() != null ) {
+			remove_case2(node);
+		}
+	}
+
+	public void remove_case2(RedBlackNode<T> node) {
+		
+		RedBlackNode<T> parent = node.getParent();
+		RedBlackNode<T> sibling = node.getSibling(node);
+		
+		if (sibling.red == true) {
+			parent.red = true;
+			sibling.red = false;
+			
+			if (node == parent.left) {
+				parent.rotateLeft();
+			} else {
+				parent.rotateRight();
+			}
+			remove_case3(node);
+		}	
+	}
+
+	public void remove_case3(RedBlackNode<T> node) {
+		RedBlackNode<T> parent = node.getParent();
+		RedBlackNode<T> sibling = node.getSibling(node);
+		
+		if ((parent.red == false) && (sibling.red == false) && (sibling.left.red == false) && (sibling.right.red == false)) {
+			sibling.red = true;
+			remove_case1(parent);
+		} else {
+			remove_case4(node);
+		}
+		
+	}
+
+	public void remove_case4(RedBlackNode<T> node) {
+		RedBlackNode<T> parent = node.getParent();
+		RedBlackNode<T> sibling = node.getSibling(node);
+		
+		if ((parent.red == true) && (sibling.red == false) && (sibling.left.red == false) && (sibling.right.red == false)) {
+			sibling.red = true;
+			parent.red = false;
+		} else {
+			remove_case5(node);
+		}
+		
+	}
+
+	public void remove_case5(RedBlackNode<T> node) {
+		RedBlackNode<T> parent = node.getParent();
+		RedBlackNode<T> sibling = node.getSibling(node);
+		
+		if (sibling.red == false) {
+			if ((node == parent.left) && (sibling.right.red == false) && (sibling.left.red == true)) {
+				sibling.red = true;
+				sibling.left.red = false;
+				sibling.rotateRight();
+			} else if ((node == parent.right) && (sibling.left.red == false) && (sibling.right.red == true)) {
+				sibling.red = true;
+				sibling.right.red = false;
+				sibling.rotateLeft();
+			}
+		}
+		remove_case6(node);
+	}
+	
+	public void remove_case6(RedBlackNode<T> node) {
+		RedBlackNode<T> parent = node.getParent();
+		RedBlackNode<T> sibling = node.getSibling(node);
+		
+		sibling.red = parent.red;
+		parent.red = false;
+		
+		if (node == parent.left) {
+			sibling.right.red = false;
+			parent.rotateLeft();
+		} else {
+			sibling.left.red = false;
+			parent.rotateLeft();
+		}
+	}
+	
+
+	public void free(RedBlackNode<T> node) {
+		node.left = null;
+		node.right = null;
+		node.parent = null;
+		node.value = null;
+	}
+	
+	public void replace_node() {
+		// TODO metodo para node e child trocarem de posicao
+	}
+
 }
